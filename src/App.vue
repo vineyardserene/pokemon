@@ -1,6 +1,6 @@
 <script setup>
 	import PokemonIndex from '@/components/PokemonCard.vue'
-	import Container from '@/views/Container.vue'
+	import Layout from '@/views/Layout.vue'
 </script>
 
 <template>

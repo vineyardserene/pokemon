@@ -9,10 +9,12 @@
                 <img src="@/assets/icon/pokemon-logo.png" alt="Pokemon Logo" class="w-36">
             </router-link>
             <!-- Tombol "Catch" dengan jumlah Pokemon yang ditangkap -->
+             <router-link to="/pocatch">
             <button class="rounded-2xl bg-gray-100 px-5 py-2 flex items-center hover:bg-yellow-400 text-sm font-medium">
-                0 Catch
+                {{ catchCount }} Catch
                 <img src="@/assets/icon/pokecatch.png" alt="Pokecatch Icon" class="w-7 pl-2">
             </button>
+            </router-link>
         </nav>
         
         <!-- Tampilan Loading saat data masih dimuat -->
@@ -30,14 +32,18 @@
     </div>
 </template>
 
-<script>
-export default {
-    props: {
-        // Properti untuk menentukan apakah tampilan sedang dalam keadaan loading
-        loading: {
-            type: Boolean,
-            default: false
-        }
-    }
-}
+<script setup>
+import { ref } from 'vue';
+
+// Status loading untuk menampilkan atau menyembunyikan spinner
+const loading = ref(true);
+
+// Jumlah Pokemon yang telah ditangkap, sebagai contoh set ke 0
+const catchCount = ref(0);
+
+// Simulasi loading selesai setelah beberapa waktu (bisa diganti dengan data fetch sebenarnya)
+setTimeout(() => {
+    loading.value = false;
+}, 1000);
 </script>
+

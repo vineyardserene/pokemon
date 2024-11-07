@@ -1,111 +1,90 @@
 <template>
-    <Container>
-        <div v-if="loading" class="flex justify-center items-center mt-24">
-            <!-- Loading Spinner -->
-            <div class="loader">Loading...</div>
-        </div>
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-14 font-sans mt-24">
-            <PokemonCard 
-                v-for="pokemon in state.pokemons" 
-                :key="pokemon.id" 
-                :poke-id="pokemon.id" 
-                :poke-name="pokemon.name" 
-                :poke-img="pokemon.imageUrl"
-            />
-        </div>
-        
-        <!-- Load More Button -->
-        <div class="flex items-center justify-center my-10">
-            <button 
-                @click="loadMore" 
-                :disabled="!state.nextUrl || loading"  
-                class="rounded-2xl bg-gray-100 px-5 py-2 flex items-center h-100 hover:bg-yellow-400 text-sm font-medium">
-                Load More
-            </button>
-        </div>
-    </Container>
+  <Layout>
+    <!-- Loading spinner untuk pemuatan awal data -->
+    <div v-if="loading && !state.pokemons.length" class="flex justify-center items-center mt-24">
+      <div class="rounded-3xl bg-white px-5 py-2.5 flex justify-center items-center">
+        <img src="@/assets/icon/pokesmall.png" alt="Loading Icon" class="animate-spin mr-2">
+        <span class="font-semibold text-md">Loading...</span>
+      </div>
+    </div>
+
+    <!-- Grid untuk menampilkan kartu Pokemon -->
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-14 font-sans mt-24">
+      <PokemonCard 
+        v-for="pokemon in state.pokemons" 
+        :key="pokemon.id" 
+        :poke-id="pokemon.id" 
+        :poke-name="pokemon.name" 
+        :poke-img="pokemon.imageUrl"
+        :is-loading="loading"  
+        class="capitalize"
+      />
+    </div>
+    
+    <!-- Tombol Load More dengan ikon loading -->
+    <div class="flex items-center justify-center my-10">
+      <button 
+        @click="loadMore" 
+        :disabled="loading"  
+        class="rounded-2xl bg-gray-100 px-5 py-2 flex items-center h-100 hover:bg-yellow-400 text-sm font-medium"
+      >
+        <img 
+          v-if="loading" 
+          src="@/assets/icon/pokesmall.png" 
+          alt="Loading Icon" 
+          class="animate-spin w-5 h-5 mr-2"
+        />
+        {{ loading ? "Loading..." : "Load More" }}
+      </button>
+    </div>
+  </Layout>
 </template>
 
-<script>
-    import PokemonCard from '@/components/PokemonCard.vue'
-    import Container from '@/views/Container.vue'
-    import PokemonAPI from '../api/ApiPokemon.js' 
-    import { onMounted, reactive, ref } from "vue";
+<script setup>
+import { onMounted, reactive, ref } from 'vue';
+import PokemonCard from '@/components/PokemonCard.vue';
+import Layout from '@/views/Layout.vue';
+import PokemonAPI from '../api/ApiPokemon.js';
 
-    export default {
-        components: {
-            Container,
-            PokemonCard
-        },
-        setup() {
-            const state = reactive({
-                pokemons: [],
-                total: 0,
-                nextUrl: '',         // URL untuk halaman selanjutnya
-                pageSize: 20         // Jumlah item per halaman
-            });
+const state = reactive({
+    pokemons: [],
+    offset: 0,
+    limit: 21
+});
 
-            const loading = ref(true);
+const loading = ref(false);
 
-            // Capitalize function for pokemon names
-            function capitalizeTheFirstLetterOfEachWord(words) {
-                const separateWord = words.toLowerCase().split(' ');
-                for (let i = 0; i < separateWord.length; i++) {
-                    separateWord[i] = separateWord[i].charAt(0).toUpperCase() + separateWord[i].substring(1);
-                }
-                return separateWord.join(' ');
-            }
+const getPokemon = async () => {
+    loading.value = true;
+    try {
+        const params = `?limit=${state.limit}&offset=${state.offset}`;
+        const res = await PokemonAPI.getPokemon(params);
 
-            // Fungsi untuk mengambil data pokemon
-            async function getPokemon() {
-                loading.value = true;
-                try {
-                    // Set parameter URL untuk halaman berikutnya jika ada
-                    const params = state.nextUrl ? state.nextUrl.substring(state.nextUrl.indexOf('?')) : `?limit=${state.pageSize}`;
-                    const res = await PokemonAPI.getPokemon(params);
+        const newPokemons = res.data.results.map((poke, index) => ({
+            id: state.offset + index + 1,
+            name: poke.name,
+            url: poke.url
+        }));
 
-                    // Perbarui URL untuk halaman berikutnya
-                    state.nextUrl = res.data.next;
+        await Promise.all(newPokemons.map(async (poke) => {
+            const imageRes = await PokemonAPI.getPokemonUrl(poke.url);
+            poke.imageUrl = imageRes.data.sprites.other['official-artwork']['front_default'];
+        }));
 
-                    // Map hasil baru ke format yang diinginkan
-                    const newPokemons = res.data.results.map((poke, index) => ({
-                        id: state.total + index + 1, // ID unik
-                        name: capitalizeTheFirstLetterOfEachWord(poke.name),
-                        url: poke.url // URL untuk gambar, akan digunakan nanti
-                    }));
-
-                    // Fetch gambar untuk setiap pokemon secara terpisah
-                    for (const poke of newPokemons) {
-                        const imageRes = await PokemonAPI.getPokemonUrl(poke.url);
-                        poke.imageUrl = imageRes.data.sprites.other['official-artwork']['front_default'];
-                    }
-
-                    // Tambahkan pokemon baru ke list dan perbarui total
-                    state.pokemons = [...state.pokemons, ...newPokemons];
-                    state.total += newPokemons.length;
-
-                } catch (error) {
-                    console.error("Error fetching pokemon:", error);
-                } finally {
-                    loading.value = false;
-                }
-            }
-
-            // Fungsi untuk memuat data lebih banyak saat tombol "Load More" diklik
-            function loadMore() {
-                getPokemon();
-            }
-
-            // Muat data awal saat komponen dipasang
-            onMounted(() => {
-                getPokemon();
-            });
-
-            return {
-                state,
-                loadMore,
-                loading
-            };
-        }
+        state.pokemons.push(...newPokemons);
+        state.offset += state.limit;
+    } catch (error) {
+        console.error("Error fetching Pokémon:", error);
+    } finally {
+        loading.value = false;
     }
+};
+
+const loadMore = () => {
+    getPokemon();
+};
+
+onMounted(() => {
+    getPokemon();
+});
 </script>
