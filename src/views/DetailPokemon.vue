@@ -85,35 +85,64 @@
                     </div>
                 </div>
 
-                <!-- Konten tab "Stats" -->
+                <!-- Konten tab "Stats" untuk menampilkan statistik Pokemon -->
                 <div v-if="isActive.stats">
-                    <!-- Content for Stats tab -->
+                    <div class="w-full lg:px-10">
+                        <div v-for="stat in pokemon.stats" :key="stat.stat.name" class="mb-3.5">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center mb-1">
+                                    <img :src="'/src/assets/icon/stats/' + stat.stat.name + '.png'" 
+                                         alt="Stat Icon" class="mr-2">
+                                    <span class="text-sm font-semibold">{{ capitalizeTheFirstLetterOfEachWord(stat.stat.name) }}</span>
+                                </div>
+                                <span class="mb-1 text-sm font-semibold">{{ stat.base_stat }}</span>
+                            </div>
+                            <div class="w-full bg-red-100 rounded-full h-2">
+                                <div class="bg-yellow-400 h-2 rounded-full" 
+                                     :style="{ width: (stat.base_stat / 200 * 100) + '%' }">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Konten tab "Moves" -->
                 <div v-if="isActive.moves">
-                    <!-- Content for Moves tab -->
+                    <div class="overflow-y-scroll h-80 moves-scroll">
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-5 mb-5">
+                            <div v-for="move in pokemon.moves" :key="move" 
+                                 class="border border-dashed py-3 hover:border-yellow-400 w-full">
+                                <p class="text-center text-sm">{{ move }}</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Modal Catch -->
         <CatchModal 
             v-if="showCatchModal" 
             @close="showCatchModal = false" 
-            @catchSuccess="showCatchSuccessModal = true" 
+            @catchSuccess="showCatchNicknameModal = true" 
             :pokemonName="pokemon.name"
             :show="showCatchModal" 
         />
 
+        <CatchNicknameModal 
+            v-if="showCatchNicknameModal" 
+            @close="showCatchNicknameModal = false"
+            @nicknameSubmitted="showCatchSuccessModal = true"
+            :pokemonName="pokemon.name"
+            :show="showCatchNicknameModal"
+        />
+
         <!-- Modal Catch Success -->
-        <CatchModalSuccess 
+        <CatchSuccessModal
             v-if="showCatchSuccessModal" 
             @close="showCatchSuccessModal = false"
             :pokemonName="pokemon.name"
             :show="showCatchSuccessModal"
         />
-
     </Layout>
 </template>
 
@@ -122,12 +151,16 @@ import { ref, reactive, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import Layout from '@/views/Layout.vue';
 import CatchModal from '@/components/CatchModal.vue';
-import CatchModalSuccess from '@/components/CatchSuccessModal.vue';
-import PokemonAPI from '../api/ApiPokemon.js';
+import CatchNicknameModal from '@/components/CatchNicknameModal.vue';
+import CatchSuccessModal from '@/components/CatchSuccessModal.vue';
+import { usePokemonStore } from '@/stores/pokemonStore';
+import PokemonAPI from '../api/ApiPokemon.js'
 
 const route = useRoute();
 const showCatchModal = ref(false);
+const showCatchNicknameModal = ref(false);
 const showCatchSuccessModal = ref(false);
+const store = usePokemonStore();
 
 const isActive = reactive({
   about: true,
@@ -162,8 +195,14 @@ async function pokemonDetails(pokeId) {
     console.error('Failed to fetch Pokémon details:', error);
   }
 }
-
 onMounted(() => {
   pokemonDetails(route.params.pokeId);
+
+  // Cek jika Pokemon ada di pokemonKeep
+  const caughtPokemon = store.pokemonKeep.find(p => p.id === parseInt(route.params.pokeId));
+  if (caughtPokemon) {
+    showCatchModal = false; // Sembunyikan tombol Catch jika sudah ditangkap
+  }
 });
+
 </script>

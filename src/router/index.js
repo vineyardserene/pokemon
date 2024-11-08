@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import PokemonView from '../views/Pokemon.vue'
 import DetailPokemonView from '../views/DetailPokemon.vue'
-import PocatchView from '../views/Pocatch.vue'
+import PokedexView from '../views/Pokedex.vue'
 
 
 const routes = [
@@ -13,12 +13,12 @@ const routes = [
   {
     path: '/pokemon-detail/:pokeId',
     name: 'pokemon-detail',
-    component: DetailPokemonView
+    component: DetailPokemonView 
   },
   {
-    path: '/pocatch',
-    name: 'pocatch',
-    component: PocatchView 
+    path: '/Pokedex',
+    name: 'Pokedex',
+    component: PokedexView 
   },
 ]
 
