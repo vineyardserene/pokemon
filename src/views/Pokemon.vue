@@ -12,12 +12,14 @@
     <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-14 font-sans mt-24">
       <PokemonCard 
         v-for="pokemon in state.pokemons" 
+        :isOwned="true"
         :key="pokemon.id" 
         :poke-id="pokemon.id" 
         :poke-name="pokemon.name" 
         :poke-img="pokemon.imageUrl"
         :is-loading="loading"  
         class="capitalize"
+        :showRemove="false"
       />
     </div>
     

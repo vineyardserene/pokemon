@@ -2,12 +2,12 @@
   <div v-if="show" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center transition-opacity duration-300 ease-in-out">
     <div class="bg-white rounded-2xl p-6 max-w-xs w-full shadow-lg relative">
       <div class="flex flex-col items-center">
-        <!-- Poké Ball Animasi -->
+        <!-- Poké Ball Animation -->
         <img src="../assets/icon/pokecatch.png" alt="pokecatch" class="w-16 h-16" :class="{ 'animate-spin': isCatching }" />
         
-        <!-- Pesan selama proses menangkap, akan muncul setelah 2 detik -->
-        <p v-if="isCatching === false" class="text-lg font-semibold text-gray-800 mt-4">
-          isooo welll
+        <!-- Message displayed after the Poké Ball animation finishes -->
+        <p v-if="!isCatching" class="text-lg font-semibold text-gray-800 mt-4">
+          You caught {{ pokemonName }}!
         </p>
       </div>
     </div>
@@ -23,23 +23,25 @@ const props = defineProps({ pokemonName: String, show: Boolean });
 const emit = defineEmits(['close']);
 const router = useRouter();
 
-// Menambahkan ref untuk menangani status animasi
 const isCatching = ref(false);
 
-// Fungsi untuk menangani perubahan tampilan ketika modal ditampilkan
+// Watch for changes in the `show` prop to trigger the animation
 watch(() => props.show, (newVal) => {
   if (newVal) {
-    // Mulai animasi Poké Ball
     isCatching.value = true;
     setTimeout(() => {
-      isCatching.value = false; // Menghentikan animasi dan menampilkan pesan setelah 2 detik
-    }, 2000); // Durasi animasi Poké Ball (2 detik)
+      isCatching.value = false; // Stop animation after 2 seconds
+    }, 2000);
   }
 });
 
-// Fungsi untuk menutup modal dan kembali ke halaman Pokedex
+// Function to close the modal and navigate to the Pokedex page
 const finish = () => {
   emit('close');
   router.push('/pokedex');
 };
 </script>
+
+<style scoped>
+/* Scoped styles for modal */
+</style>

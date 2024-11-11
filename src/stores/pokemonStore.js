@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 
 export const usePokemonStore = defineStore('pokemon', {
   state: () => ({
-    pokemonKeep: JSON.parse(localStorage.getItem('pokemonKeep')) || [],  
+    pokemonKeep: JSON.parse(localStorage.getItem('pokemonKeep')) || [],
     pokemonHistory: JSON.parse(localStorage.getItem('pokemonHistory')) || [],
   }),
   getters: {
@@ -12,11 +12,13 @@ export const usePokemonStore = defineStore('pokemon', {
   },
   actions: {
     catchPokemon(pokemon) {
+      console.log(pokemon);
+      // Pastikan pokemon.image berasal dari URL API, jika tidak gunakan gambar lokal sebagai fallback
       const newPokemon = {
         id: pokemon.id,
         name: pokemon.name,
-        nickname: pokemon.nickname || pokemon.name,
-        image: pokemon.image || '/assets/icon/poke-default.png', // Default image jika tidak ada gambar
+        nickname: pokemon.nickname,
+        image: pokemon.imgUrl || pokemon.image || '/assets/icon/poke-default.png', // Ambil dari API atau gunakan default
       };
 
       // Menambahkan Pokémon ke Keep dan History

@@ -58,7 +58,9 @@ const fetchPokemonDetails = async (pokeName) => {
   const res = await PokemonAPI.getPokemonDetails(pokeName);
   const data = res.data;
   pokemon.value = {
+    id : data.id,
     name: data.name,
+    nickname: data.nickname,
     imgUrl: data.sprites.other['official-artwork'].front_default,
   };
 };
@@ -69,9 +71,15 @@ onMounted(() => {
 
 const catchPokemon = () => {
   const pokemonData = {
-    name: pokemon.value.name, // Use the pokemon name fetched from the API
-    nickname: nickname.value, // Use the nickname entered by the user
+    id: pokemon.value.id, // Tambahkan id dari API
+    name: pokemon.value.name, // Gunakan nama Pokémon dari API
+    nickname: nickname.value, // Gunakan nickname yang diinput pengguna
+    image: pokemon.value.imgUrl, // URL gambar dari API (gunakan imgUrl dari hasil fetch)
   };
+
+  // Debugging untuk memastikan data lengkap
+  console.log("Pokemon Data to be Saved:", pokemonData);
+
 
   store.catchPokemon(pokemonData); // Store the Pokémon data with nickname
   caught.value = true; // Mark the Pokémon as caught

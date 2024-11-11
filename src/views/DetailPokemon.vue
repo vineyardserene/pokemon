@@ -174,14 +174,12 @@
   import CatchModal from '@/components/CatchModal.vue';
   import CatchNicknameModal from '@/components/CatchNicknameModal.vue';
   import CatchSuccessModal from '@/components/CatchSuccessModal.vue';
-  import { usePokemonStore } from '@/stores/pokemonStore';
-  import PokemonAPI from '../api/ApiPokemon.js'
+  import PokemonAPI from '../api/ApiPokemon.js';
   
   const route = useRoute();
   const showCatchModal = ref(false);
   const showCatchNicknameModal = ref(false);
   const showCatchSuccessModal = ref(false);
-  const store = usePokemonStore();
   
   const isActive = reactive({
     about: true,
@@ -199,6 +197,18 @@
     isActive.moves = tab === 'moves';
   }
   
+  // Fungsi untuk menyimpan data Pokémon yang ditangkap ke localStorage
+  function saveToLocalStorage(pokemonData) {
+    const storedPokemons = JSON.parse(localStorage.getItem("pokemonCaught")) || [];
+  
+    // Menambahkan data Pokémon baru dengan URL gambar dari API
+    storedPokemons.push(pokemonData);
+  
+    // Menyimpan kembali data ke localStorage
+    localStorage.setItem("pokemonCaught", JSON.stringify(storedPokemons));
+  }
+  
+  // Fungsi untuk mengambil detail Pokémon dari API
   async function pokemonDetails(pokeId) {
     try {
       const res = await PokemonAPI.getPokemonDetails(pokeId);
@@ -213,32 +223,37 @@
         experience: data.base_experience,
         stats: data.stats,
         moves: data.moves.map(({ move }) => move.name),
-        imgUrl: data.sprites.other['official-artwork'].front_default,
+        imgUrl: data.sprites.other['official-artwork'].front_default, // Mengambil URL gambar dari API
       };
+
+      console.log("Pokemon Image URL from API:", pokemon.value.imgUrl);
   
-      // Check if Pokemon is already caught
-      isCaught.value = store.pokemonKeep.some(p => p.id === pokemon.value.id);
+      // Cek apakah Pokémon sudah ditangkap
+      const storedPokemons = JSON.parse(localStorage.getItem("pokemonCaught")) || [];
+      isCaught.value = storedPokemons.some(p => p.id === pokemon.value.id);
     } catch (error) {
       console.error('Failed to fetch Pokémon details:', error);
     }
   }
   
+  // Fungsi untuk menangkap Pokémon dan menyimpan nickname
   const saveNickname = () => {
-    const pokemonData = {
-      ...pokemon.value,
-      nickname: nickname.value,
-    };
-  
-    store.catchPokemon(pokemonData);
-    showCatchSuccessModal.value = true;  // Open catch success modal
+  const pokemonData = {
+    id: pokemon.value.id,
+    name: pokemon.value.name,
+    nickname: nickname.value,
+    image: pokemon.value.imgUrl, // Gunakan URL gambar dari API
   };
+
+  saveToLocalStorage(pokemonData);
+
+  // Update status dan buka modal keberhasilan
+  showCatchSuccessModal.value = true;
+  isCaught.value = true;
+};
   
+  // Mengambil data Pokémon yang disimpan di localStorage saat komponen di-mount
   onMounted(() => {
     pokemonDetails(route.params.pokeId);
   });
   </script>
-  
-  <style scoped>
-  /* Add any additional scoped styles here */
-  </style>
-  

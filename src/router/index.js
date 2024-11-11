@@ -16,7 +16,7 @@ const routes = [
     component: DetailPokemonView 
   },
   {
-    path: '/Pokedex',
+    path: '/pokedex',
     name: 'Pokedex',
     component: PokedexView 
   },
