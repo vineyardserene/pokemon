@@ -8,6 +8,7 @@
       <div class="absolute">
         <p class="font-semi group-hover:text-yellow-500">{{ formattedId }}</p>
         <h4 class="font-bold text-2xl">{{ pokeName }}</h4>
+        <p v-if="nickname" class="text-sm text-gray-500 mt-1">{{ nickname }}</p>
       </div>
 
       <!-- Gambar bayangan di latar belakang -->
@@ -24,9 +25,16 @@
       <div v-else class="absolute z-10 -top-14 -right-5 flex items-center justify-center">
         <img :src="pokeImg" alt="Pokemon" class="w-40 xl:w-44 h-auto" />
       </div>
+
+      
+      <!-- Status for 'Owned' -->
+      <div v-if="isOwned" class="absolute top-2 left-2 text-white text-xs p-1 rounded-full">
+        <img src="@/assets/icon/pokeactive.png" alt="Loading Icon" class="mr-2 w-5 lg:w-auto"/>
+      </div>
     </div>
   </router-link>
 </template>
+
 
 <script setup>
 import { computed } from 'vue';
@@ -36,12 +44,39 @@ const props = defineProps({
     type: [String, Number],
     required: true
   },
-  pokeName: String,
-  pokeImg: String,
-  isLoading: Boolean
+  pokeName: {
+    type: String,
+    required: true
+  },
+  pokeImg: {
+    type: String,
+    default: '/assets/icon/poke-default.png'
+  },
+  isLoading: {
+    type: Boolean,
+    default: false
+  },
+  nickname: {
+    type: String,
+    default: ''
+  }
 });
 
+// Format Pokemon ID to always show 4 digits
 const formattedId = computed(() => {
   return String(props.pokeId).padStart(4, '0');
 });
+
+// Check if the pokemon is owned (in Keep)
+const isOwned = computed(() => {
+  const pokemonKeep = JSON.parse(localStorage.getItem('pokemonKeep')) || [];
+  return pokemonKeep.some(pokemon => pokemon.id === props.pokeId);
+});
 </script>
+
+<style scoped>
+/* Style for hover and other interactions */
+.group:hover {
+  transform: scale(1.05);
+}
+</style>

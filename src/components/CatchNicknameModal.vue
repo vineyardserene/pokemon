@@ -1,13 +1,12 @@
 <template>
   <div v-if="show" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
     <div class="bg-white p-8 rounded-3xl shadow-lg w-96">
-      
       <p class="font-semi text-lg text-center mt-4 font-semibold">
-        Wow, you caught {{ pokemonName }}!
+        Wow, you caught {{ pokemon.name }}!
       </p>
       
       <p class="font-semi text-lg text-center mt-4 font-semibold">
-        Give a Wild {{ pokemonName }} a Nickname
+        Give a Wild {{ pokemon.name }} a Nickname
       </p>
 
       <div class="flex justify-center mt-4">
@@ -39,36 +38,67 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { usePokemonStore } from '@/stores/pokemonStore';
+import { ref, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { usePokemonStore } from '@/stores/pokemonStore.js';
+import PokemonAPI from '../api/ApiPokemon.js';
 
 const props = defineProps({ pokemonName: String, show: Boolean });
 const emit = defineEmits(['close', 'nicknameSubmitted']);
 
 const nickname = ref('');
-const caught = ref(false); // Tambahkan variabel caught untuk melacak status tangkapan
+const caught = ref(false); // Add caught variable to track the catch status
 const store = usePokemonStore();
 const router = useRouter();
 
+const pokemon = ref({}); // Declare pokemon data
+
+// Fetch the details of the Pokémon based on the name (or any other property you prefer)
+const fetchPokemonDetails = async (pokeName) => {
+  const res = await PokemonAPI.getPokemonDetails(pokeName);
+  const data = res.data;
+  pokemon.value = {
+    name: data.name,
+    imgUrl: data.sprites.other['official-artwork'].front_default,
+  };
+};
+
+onMounted(() => {
+  fetchPokemonDetails(props.pokemonName); // Fetch details when the component is mounted
+});
+
 const catchPokemon = () => {
-  const pokemonData = { name: props.pokemonName, nickname: nickname.value };
+  const pokemonData = {
+    name: pokemon.value.name, // Use the pokemon name fetched from the API
+    nickname: nickname.value, // Use the nickname entered by the user
+  };
 
-  // Gunakan metode yang benar dari store
-  store.catchPokemon(pokemonData); // gunakan 'catchPokemon' sesuai dengan definisi di pokemonStore.js
-  caught.value = true; // Tandai bahwa Pokémon sudah ditangkap
+  store.catchPokemon(pokemonData); // Store the Pokémon data with nickname
+  caught.value = true; // Mark the Pokémon as caught
 
-  emit('nicknameSubmitted', nickname.value); // Emit ke modal sukses
-  emit('close'); // Tutup modal nickname
+  emit('nicknameSubmitted', nickname.value); // Emit nicknameSubmitted to parent
+  emit('close'); // Close the nickname modal
 
-  // Tampilkan modal sukses sebentar, lalu pindah ke Pokedex
+  // Display success modal briefly, then navigate to the Pokedex
   setTimeout(() => {
-    router.push('/pokedex'); // Navigasi ke halaman Pokedex
+    router.push('/pokedex'); // Navigate to Pokedex page
   }, 1000);
 };
 
 const close = () => {
-  emit('close'); // Emit event close
+  emit('close'); // Emit event close to close the modal
 };
-
+const saveNickname = () => {
+    const pokemonData = {
+      ...pokemon.value,
+      nickname: nickname.value,
+    };
+  
+    store.catchPokemon(pokemonData);
+    router.push('/pokedex'); // Navigate to the Pokedex page
+  };
 </script>
+
+<style scoped>
+/* Scoped styles for modal */
+</style>
