@@ -4,9 +4,11 @@
     <!-- Kontainer utama kartu dengan efek hover -->
     <div class="group rounded-xl bg-white w-full p-10 py-16 relative flex items-center justify-between mb-4 transition-transform duration-300 ease-in-out hover:-translate-y-2.5">
 
+       <!-- Tombol remove tetap di dalam <router-link> -->
        <div v-if="showRemove" class="absolute z-10 top-3 left-3">
-        <img src="@/assets/icon/remove.png" alt="remove" class="mr-2 w-5 lg:w-auto cursor-pointer" @click="handleRemove">
-      </div> 
+         <img src="@/assets/icon/remove.png" alt="remove" class="mr-2 w-5 lg:w-auto cursor-pointer" @click.prevent="handleRemove">
+       </div> 
+
       <!-- Bagian ID dan Nama Pokemon -->
       <div class="absolute">
         <p class="font-semi group-hover:text-yellow-500">{{ formattedId }}</p>
@@ -29,8 +31,8 @@
         <img :src="pokeImg" alt="Pokemon" class="w-40 xl:w-44 h-auto" />
       </div>
 
-       <!-- Status for 'Owned' -->
-       <div v-if="isOwned" class="absolute top-2 left-2 text-white text-xs p-1 rounded-full">
+      <!-- Status for 'Owned' -->
+      <div v-if="isOwned" class="absolute top-2 left-2 text-white text-xs p-1 rounded-full">
         <img src="@/assets/icon/pokeactive.png" alt="Loading Icon" class="mr-2 w-5 lg:w-auto"/>
       </div>
     </div>
@@ -38,7 +40,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, defineEmits } from 'vue';
 
 const props = defineProps({
   pokeId: {
@@ -52,6 +54,15 @@ const props = defineProps({
   showRemove: Boolean,
   isOwned: Boolean
 });
+
+// Emit event agar komponen induk dapat menangani penghapusan
+const emit = defineEmits(['removePokemon']);
+
+const handleRemove = (event) => {
+  event.stopPropagation();  // Mencegah navigasi saat remove diklik
+  emit('removePokemon', props.pokeId);
+};
+
 const isOwned = computed(() => {
   const pokemonKeep = JSON.parse(localStorage.getItem('pokemonKeep')) || [];
   return pokemonKeep.some(pokemon => pokemon.id === props.pokeId);

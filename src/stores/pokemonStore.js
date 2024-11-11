@@ -23,7 +23,6 @@ export const usePokemonStore = defineStore('pokemon', {
 
       // Menambahkan Pokémon ke Keep dan History
       this.pokemonKeep.push(newPokemon);
-      this.pokemonHistory.push(newPokemon);
 
       // Update LocalStorage
       this.updateLocalStorage();
@@ -35,8 +34,18 @@ export const usePokemonStore = defineStore('pokemon', {
     },
 
     removePokemon(id) {
-      this.pokemonKeep = this.pokemonKeep.filter(pokemon => pokemon.id !== id);
-      this.updateLocalStorage();
+      // Cari index Pokémon di pokemonKeep berdasarkan id
+      const index = this.pokemonKeep.findIndex(pokemon => pokemon.id === id);
+      if (index !== -1) {
+        // Pindahkan Pokémon dari Keep ke History
+        const removedPokemon = this.pokemonKeep.splice(index, 1)[0];
+        this.pokemonHistory.push(removedPokemon);
+    
+        // Perbarui localStorage setelah menghapus dan memindahkan
+        this.updateLocalStorage();
+      }
     },
+    
   },
 });
+

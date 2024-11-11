@@ -106,7 +106,4 @@ const saveNickname = () => {
     router.push('/pokedex'); // Navigate to the Pokedex page
   };
 </script>
-
-<style scoped>
-/* Scoped styles for modal */
-</style>
+ 
