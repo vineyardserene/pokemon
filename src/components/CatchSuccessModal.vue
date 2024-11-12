@@ -1,18 +1,20 @@
 <template>
-  <div v-if="show" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center transition-opacity duration-300 ease-in-out">
-    <div class="bg-white rounded-2xl p-6 max-w-xs w-full shadow-lg relative">
+  <div
+    v-if="show"
+    class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center transition-opacity duration-300 ease-in-out"
+  >
+    <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-lg relative"> <!-- Mengubah max-w-xs menjadi max-w-md -->
       <div class="flex flex-col items-center">
-        <!-- Poké Ball Animation -->
         <img src="../assets/icon/pokecatch.png" alt="pokecatch" class="w-16 h-16" :class="{ 'animate-spin': isCatching }" />
         
-        <!-- Message displayed after the Poké Ball animation finishes -->
-        <p v-if="!isCatching" class="text-lg font-semibold text-gray-800 mt-4">
-          You caught {{ pokemonName }}!
+        <p v-if="!isCatching" class="text-lg font-semibold text-gray-800 mt-4 text-center">
+          Well Done, Check My Pokemon List!
         </p>
       </div>
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref, watch } from 'vue';

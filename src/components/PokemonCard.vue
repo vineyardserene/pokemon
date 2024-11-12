@@ -11,7 +11,7 @@
 
       <!-- Bagian ID dan Nama Pokemon -->
       <div class="absolute">
-        <p class="font-semi group-hover:text-yellow-500">{{ formattedId }}</p>
+        <p class="group-hover:text-yellow-500">{{ formattedId }}</p>
         <h4 class="font-bold text-2xl">{{ pokeName }}</h4>
         <p class="text-gray-500 italic">{{ nickName }}</p>
       </div>

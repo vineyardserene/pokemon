@@ -7,21 +7,19 @@
         >
           <div
             @click="activeTab = 'keep'"
-            :class="
-              activeTab === 'keep'
-                ? 'home-switch-active cursor-pointer py-1 px-4 text-white bg-yellow-400 rounded-full'
-                : 'cursor-pointer py-1 px-4 text-black'
-            "
+            :class="{ 
+              'home-switch-active cursor-pointer py-1 px-4 text-white bg-yellow-400 rounded-full': activeTab === 'keep',
+              'cursor-pointer py-1 px-4 text-black': activeTab !== 'keep' 
+            }"
           >
             Keep
           </div>
           <div
             @click="activeTab = 'history'"
-            :class="
-              activeTab === 'history'
-                ? 'home-switch-active cursor-pointer py-1 px-4 text-white bg-yellow-400 rounded-full'
-                : 'cursor-pointer py-1 px-4 text-black'
-            "
+            :class="{ 
+              'home-switch-active cursor-pointer py-1 px-4 text-white bg-yellow-400 rounded-full': activeTab === 'history',
+              'cursor-pointer py-1 px-4 text-black': activeTab !== 'history' 
+            }"
           >
             History
           </div>
@@ -33,7 +31,7 @@
     <div class="mt-44 lg:mt-14">
       <!-- Tampilkan konten 'Keep' -->
       <div v-if="activeTab === 'keep'" class="text-center">
-        <div v-if="pokemonKeep.length === 0">
+        <template v-if="pokemonKeep.length === 0">
           <div class="flex items-center justify-center">
             <img
               src="../assets/icon/poke-shadow.png"
@@ -57,28 +55,29 @@
               />
             </router-link>
           </div>
-        </div>
+        </template>
 
         <div
           v-else
-          class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-14 font-sans mt-24"
+          class=" text-left w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-14 mt-24"
         >
           <PokemonCard
             v-for="pokemon in pokemonKeep"
-            :showRemove="true"
-            :isOwned="false"
-            :nick-name="pokemon.nickname"
             :key="pokemon.id"
+            :nick-name="pokemon.nickname"
             :poke-id="pokemon.id"
             :poke-name="pokemon.name"
             :poke-img="pokemon.image"
+            :showRemove="true"
+            :isOwned="false"
             @removePokemon="removePokemonFromKeep"
           />
         </div>
       </div>
+
       <!-- Tampilkan konten 'History' -->
       <div v-if="activeTab === 'history'" class="text-center">
-        <div v-if="pokemonHistory.length === 0">
+        <template v-if="pokemonHistory.length === 0">
           <div class="flex items-center justify-center">
             <img
               src="../assets/icon/poke-shadow.png"
@@ -102,21 +101,21 @@
               />
             </router-link>
           </div>
-        </div>
+        </template>
 
         <div
           v-else
-          class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-14 font-sans mt-24"
+          class="text-left w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-14 font-sans mt-24"
         >
           <PokemonCard
             v-for="pokemon in pokemonHistory"
-            :showRemove="false"
-            :isOwned="false"
-            :nick-name="pokemon.nickname"
             :key="pokemon.id"
+            :nick-name="pokemon.nickname"
             :poke-id="pokemon.id"
             :poke-name="pokemon.name"
             :poke-img="pokemon.image"
+            :showRemove="false"
+            :isOwned="false"
           />
         </div>
       </div>
@@ -136,22 +135,27 @@ const pokemonKeep = ref([]);
 const pokemonHistory = ref([]);
 
 // Fungsi untuk menghapus Pokémon dari keep dan memindahkannya ke history
-const removePokemonFromKeep = (pokeId) => {
+function removePokemonFromKeep(pokeId) {
   pokemonStore.removePokemon(pokeId);
-  const index = pokemonKeep.value.findIndex((pokemon) => pokemon.id === pokeId);
+  var index = -1;
+
+  for (var i = 0; i < pokemonKeep.value.length; i++) {
+    if (pokemonKeep.value[i].id === pokeId) {
+      index = i;
+      break;
+    }
+  }
+
   if (index !== -1) {
-    const removedPokemon = pokemonKeep.value.splice(index, 1)[0];
+    var removedPokemon = pokemonKeep.value.splice(index, 1)[0];
     pokemonHistory.value.push(removedPokemon);
 
     // Simpan perubahan ke localStorage
     localStorage.setItem("pokemonKeep", JSON.stringify(pokemonKeep.value));
-    localStorage.setItem(
-      "pokemonHistory",
-      JSON.stringify(pokemonHistory.value)
-    );
+    localStorage.setItem("pokemonHistory", JSON.stringify(pokemonHistory.value));
   }
-};
-
+}
+;
 
 // Ambil data dari localStorage saat komponen dimuat
 onMounted(() => {

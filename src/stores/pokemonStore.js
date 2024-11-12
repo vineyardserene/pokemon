@@ -1,51 +1,51 @@
+// pokemonStore.js
 import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
 
-export const usePokemonStore = defineStore('pokemon', {
-  state: () => ({
-    pokemonKeep: JSON.parse(localStorage.getItem('pokemonKeep')) || [],
-    pokemonHistory: JSON.parse(localStorage.getItem('pokemonHistory')) || [],
-  }),
-  getters: {
-    catchCount(state) {
-      return state.pokemonKeep.length;
-    },
-  },
-  actions: {
-    catchPokemon(pokemon) {
-      console.log(pokemon);
-      // Pastikan pokemon.image berasal dari URL API, jika tidak gunakan gambar lokal sebagai fallback
-      const newPokemon = {
-        id: pokemon.id,
-        name: pokemon.name,
-        nickname: pokemon.nickname,
-        image: pokemon.imgUrl || pokemon.image || '/assets/icon/poke-default.png', // Ambil dari API atau gunakan default
-      };
+export const usePokemonStore = defineStore('pokemon', () => {
+  // State
+  const pokemonKeep = ref(JSON.parse(localStorage.getItem('pokemonKeep')) || []);
+  const pokemonHistory = ref(JSON.parse(localStorage.getItem('pokemonHistory')) || []);
 
-      // Menambahkan Pokémon ke Keep dan History
-      this.pokemonKeep.push(newPokemon);
+  // Getters
+  const catchCount = computed(() => pokemonKeep.value.length);
 
-      // Update LocalStorage
-      this.updateLocalStorage();
-    },
+  // Actions
+  function catchPokemon(pokemon) {
+    console.log("Caught Pokemon:", pokemon);
+    const newPokemon = {
+      id: pokemon.id,
+      name: pokemon.name,
+      nickname: pokemon.nickname || '', // Pastikan nickname diinisialisasi
+      image: pokemon.imgUrl || pokemon.image || '../assets/icon/poke-default.png',
+      captureTime: Date.now() // Tambahkan captureTime untuk unik setiap kali menangkap
+    };
 
-    updateLocalStorage() {
-      localStorage.setItem('pokemonKeep', JSON.stringify(this.pokemonKeep));
-      localStorage.setItem('pokemonHistory', JSON.stringify(this.pokemonHistory));
-    },
+    // Tambahkan langsung ke Keep tanpa pengecekan ID
+    pokemonKeep.value.push(newPokemon);
+    updateLocalStorage();
+  }
 
-    removePokemon(id) {
-      // Cari index Pokémon di pokemonKeep berdasarkan id
-      const index = this.pokemonKeep.findIndex(pokemon => pokemon.id === id);
-      if (index !== -1) {
-        // Pindahkan Pokémon dari Keep ke History
-        const removedPokemon = this.pokemonKeep.splice(index, 1)[0];
-        this.pokemonHistory.push(removedPokemon);
-    
-        // Perbarui localStorage setelah menghapus dan memindahkan
-        this.updateLocalStorage();
-      }
-    },
-    
-  },
+  function updateLocalStorage() {
+    localStorage.setItem('pokemonKeep', JSON.stringify(pokemonKeep.value));
+    localStorage.setItem('pokemonHistory', JSON.stringify(pokemonHistory.value));
+  }
+
+  function removePokemon(id) {
+    const index = pokemonKeep.value.findIndex(pokemon => pokemon.id === id);
+    if (index !== -1) {
+      const removedPokemon = pokemonKeep.value.splice(index, 1)[0];
+      pokemonHistory.value.push(removedPokemon);
+      updateLocalStorage();
+    }
+  }
+
+  return {
+    pokemonKeep,
+    pokemonHistory,
+    catchCount,
+    catchPokemon,
+    updateLocalStorage,
+    removePokemon
+  };
 });
-
